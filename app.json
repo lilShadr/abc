@@ -1,0 +1,7 @@
+{
+    "name": "abc",
+    "discription": "Javascript Backend",
+    "repository": "https://github.com/lilShadr/abc.git",
+    "keywords": ["node", "express", "heroku"],
+    "image": "heroku/nodejs" 
+}

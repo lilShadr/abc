@@ -3,10 +3,19 @@ const express = require("express")
 const mongoose = require("mongoose");
 const bodyParser = require('body-parser')
 
-mongoose.connect("mongodb+srv://firstuser:example@firstcluster.ixwye.mongodb.net/myFirstDatabase?retryWrites=true&w=majority", {
+mongoose.connect(CONNECTION_STRING, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 });
+
+const dotenv = require('dotenv');
+var dotenvExpand = require('dotenv-exapnd')
+var env = dotenv.config()
+
+dotenvExpand.expand(env)
+
+const CONNECTION_STRING = process.env.CONNECTION_STRING
+const PORT = process.env.PORT || 3001
 
 const Thread = require("./model/threads");
 const Reply = require("./model/replies");
@@ -15,7 +24,6 @@ const User = require("./model/users");
 const { response } = require("express");
 
 const app = express()
-const PORT = process.env.PORT || 3001
 
 app.use('/healthcheck', require('./routes/healthcheck.js'));
 app.use(express.urlencoded({ extended: true }));

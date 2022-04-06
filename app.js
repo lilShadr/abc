@@ -4,7 +4,7 @@ const mongoose = require("mongoose");
 const bodyParser = require('body-parser')
 
 const dotenv = require('dotenv');
-var dotenvExpand = require('dotenv-exapnd')
+var dotenvExpand = require('dotenv-expand')
 var env = dotenv.config()
 dotenvExpand.expand(env)
 

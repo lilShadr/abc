@@ -77,11 +77,56 @@ app.delete("/threads/:threadId/replies/:replyId/like", (request, response)=>{
     response.status(200).send(body)
 })
 
-app.post("/users", (request, response) => {
+app.post("/users/", (request, response) => {
     console.log(request.body)
+    body={"threadId":request.params.threadId, "replyId": request.params.replyId}
     let user = new User(request.body)
     user.save()
+    console.log(user)
     response.status(200).send(request.body)
+})
+
+/*app.get("/users/:id", (request, response) => {
+    let user;
+    try {
+        user = User.findById(request.params.id)
+    } catch (e) {
+        response.status(400).send("Bad request")
+    }
+    if (user) {
+        console.log(user)
+        response.status(200).json(user)
+    } else {
+        response.status(404).send("Not found")
+    }
+})
+*/
+
+app.get("/users/:id", (request, response) => {
+    console.log(request.params.id)
+    try {
+        User.findById(request.params.id, (err, user) => {
+            console.log(user)
+            if(err) throw error;
+            if(user) {
+                response.status(200).json(user)
+    }else {
+        response.status(404).send("Not found")
+        }
+    })
+    }catch(e){
+        response.status(400).send("Bad request")
+    }
+})
+
+
+app.delete("/users/:id", (request, response) => {
+    try {
+        User.deleteOne({ _id: request.params.id });
+    } catch (e) {
+        response.status(400).send("Bad request");
+    }
+    response.status(200).end();
 })
 
 app.listen(PORT , ()=>{

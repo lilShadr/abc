@@ -4,8 +4,8 @@ const mongoose = require("mongoose");
 const bodyParser = require('body-parser')
 
 const dotenv = require('dotenv');
-var dotenvExpand = require('dotenv-expand')
-var env = dotenv.config()
+let dotenvExpand = require('dotenv-expand')
+let env = dotenv.config()
 dotenvExpand.expand(env)
 
 const CONNECTION_STRING = process.env.CONNECTION_STRING
@@ -39,47 +39,54 @@ app.get("/", (request, response)=>{
    User.create
 })
 
-app.get("/threads", (request, response)=>{
-   body={"threads": 
-   [
-      {"id":"1"}
-      ,{"id":"2"}
-      ,{"id":"3"}
-      ,{"id":"4"}
-   ]}
-   response.status(200).send(body)
+app.get("/threads", async (request, response)=>{
+   const threads = Thread.find().then((threads)=> {
+      response.json(threads)
+   })
 })
 
-app.post("/threads", (request, response)=>{
-   console.log(request.body)
-
-   body={"threads": 
-   [
-      {"id":"1"}
-      ,{"id":"2"}
-      ,{"id":"3"}
-      ,{"id":"4"}
-   ]}
-   response.status(200).send(body)
+app.post("/threads", async (request, response)=>{
+   let thread = new Thread(request.body)
+   thread.save()
+   response.status(200).json(thread)
 })
 
-app.get("/threads/:id", (request, response)=> {
-   console.log(request.params)
-   body={"id":request.params.id}
-   response.status(200).send(body)
+app.get("/threads/:id", async (request, response)=> {
+   let thread
+   try{
+   thread = await Thread.findById(request.params.id)
+   }catch(e){
+      response.status(400).send("Bad Request")
+   }
+   if(thread){
+      response.status(200).json(thread)
+   }else{
+      response.status(404).send("Thread not found!")
+   }
 })
 
 app.get("/threads/:id/replies", (request, response)=> {
-   console.log(request.params)
-   body={"id":request.params.id, "replies": [{"id":1, "reply": "any reply"}, {"id":2, "reply": "another reply"}]}
-   response.status(200).send(body)
+
 })
 
-app.post("/threads/:id/replies", (request, response)=> {
-   console.log(request.params)
-   console.log(request.body)
-   body={"id":request.params.id, "replies": [{"id":1, "reply": "any reply"}, {"id":2, "reply": "another reply"}]}
-   response.status(200).send(body)
+app.post("/threads/:id/replies", async (request, response)=> {
+   let thread;
+   try{
+      thread = await Thread.findById(request.params.id)
+   }catch(e){
+      response.status(400).send("Bad Request")
+   }
+   if(thread){
+      request.body.time = new Date();
+      const reply = new Reply(request.body);
+      thread.replies.push(reply);
+      await reply.save();
+      await thread.save();
+      response.status(201).end();
+
+   }else{
+      response.status(404).send("Not found");
+   }
 })
 
 app.post("/threads/:threadId/replies/:replyId/like", (request, response)=> {

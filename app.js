@@ -97,7 +97,7 @@ app.post("/users", (request, response) => {
    response.status(200).send(request.body)
 })
 
-/*app.get("/users", (request, response) => {
+app.get("/users", (request, response) => {
     User.find({}, (err, users) => {
        const userMap = {};
  
@@ -108,7 +108,7 @@ app.post("/users", (request, response) => {
        response.send(userMap);
      });
  })
-*/
+
 app.get("/users/:id", (request, response)=> {
    console.log(request.params.id)
    try {

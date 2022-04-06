@@ -3,19 +3,18 @@ const express = require("express")
 const mongoose = require("mongoose");
 const bodyParser = require('body-parser')
 
-mongoose.connect(CONNECTION_STRING, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-});
-
 const dotenv = require('dotenv');
 var dotenvExpand = require('dotenv-exapnd')
 var env = dotenv.config()
-
 dotenvExpand.expand(env)
 
 const CONNECTION_STRING = process.env.CONNECTION_STRING
 const PORT = process.env.PORT || 3001
+
+mongoose.connect(CONNECTION_STRING, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+});
 
 const Thread = require("./model/threads");
 const Reply = require("./model/replies");

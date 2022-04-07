@@ -1,15 +1,16 @@
+const dotenv = require('dotenv');
+let dotenvExpand = require('dotenv-expand');
+let env = dotenv.config();
+dotenvExpand.expand(env);
+
+const CONNECTION_STRING = process.env.CONNECTION_STRING
+const PORT = process.env.PORT || 3001
+
+
 const cors = require("cors")
 const express = require("express")
 const mongoose = require("mongoose");
 const bodyParser = require('body-parser')
-
-const dotenv = require('dotenv');
-let dotenvExpand = require('dotenv-expand')
-let env = dotenv.config()
-dotenvExpand.expand(env)
-
-const CONNECTION_STRING = process.env.CONNECTION_STRING
-const PORT = process.env.PORT || 3001
 
 mongoose.connect(CONNECTION_STRING, {
   useNewUrlParser: true,
@@ -65,8 +66,14 @@ app.get("/threads/:id", async (request, response)=> {
    }
 })
 
-app.get("/threads/:id/replies", (request, response)=> {
-
+app.get("/threads/:id/replies", async (request, response)=>{
+   Reply.find().then((replies)=> {
+      if(replies){
+      response.status(200).json(replies)
+      }else{
+         response.status(404).send("Not found")
+      }
+   })
 })
 
 app.post("/threads/:id/replies", async (request, response)=> {
@@ -89,6 +96,12 @@ app.post("/threads/:id/replies", async (request, response)=> {
    }
 })
 
+app.get("/threads/:threadId/replies/:replyId/like", async (request, response)=>{
+   Like.find().then((likes)=> {
+      response.json(likes)
+   })
+})
+
 app.post("/threads/:threadId/replies/:replyId/like", (request, response)=> {
    console.log(request.params)
    body={"threadId":request.params.threadId, "replyId": request.params.replyId}
@@ -104,6 +117,13 @@ app.delete("/threads/:threadId/replies/:replyId/like", (request, response)=> {
 
 //curl -X POST http://localhost:3001/users -H 'Content-Type: application/json' -d "{\"username\":\"nisse\",\"password\":\"password\"}"
 //Create
+
+app.get("/users", async (request, response)=>{
+   User.find().then((users)=> {
+      response.json(users)
+   })
+})
+
 app.post("/users", (request, response) => {
    console.log(request.body)
    let user = new User(request.body)

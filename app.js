@@ -6,7 +6,6 @@ dotenvExpand.expand(env);
 const CONNECTION_STRING = process.env.CONNECTION_STRING
 const PORT = process.env.PORT || 3001
 
-
 const cors = require("cors")
 const express = require("express")
 const mongoose = require("mongoose");
@@ -22,6 +21,7 @@ const Reply = require("./model/replies");
 const Like = require("./model/likes");
 const User = require("./model/users");
 const { response } = require("express");
+const { findByIdAndDelete, deleteOne } = require('./model/threads');
 
 const app = express()
 
@@ -66,7 +66,7 @@ app.get("/threads/:id", async (request, response)=> {
    }
 })
 
-app.get("/threads/:id/replies", async (request, response)=>{
+/*app.get("/threads/:id/replies", async (request, response)=>{
    Reply.find().then((replies)=> {
       if(replies){
       response.status(200).json(replies)
@@ -74,7 +74,22 @@ app.get("/threads/:id/replies", async (request, response)=>{
          response.status(404).send("Not found")
       }
    })
+})*/
+
+app.get("/threads/:id/replies", async (request, response)=> {
+   let thread
+   try{
+   thread = await Thread.findById(request.params.id)
+   }catch(e){
+      response.status(400).send("Bad Request")
+   }
+   if(thread){
+      response.status(200).json(request.body)
+   }else{
+      response.status(404).send("Thread not found!")
+   }
 })
+
 
 app.post("/threads/:id/replies", async (request, response)=> {
    let thread;
@@ -102,17 +117,49 @@ app.get("/threads/:threadId/replies/:replyId/like", async (request, response)=>{
    })
 })
 
-app.post("/threads/:threadId/replies/:replyId/like", (request, response)=> {
-   console.log(request.params)
-   body={"threadId":request.params.threadId, "replyId": request.params.replyId}
-   response.status(200).send(body)
+app.post("/threads/:threadId/replies/:replyId/like", async (request, response)=> {
+      let reply;
+      let thread;
+      try{
+         thread = await Thread.findById(request.params.threadId)
+         reply = await Reply.findById(request.params.replyId)
+      }catch(e){
+         response.status(400).send("Bad Request")
+      }
+      if(thread && reply){
+         request.body.time = new Date();
+         const like = new Like(request.body);
+         reply.likes.push(like);
+         await like.save();
+         await reply.save();
+         response.status(201).send();
+   
+      }else{
+         response.status(404).send("Not found");
+   }
 })
 
-app.delete("/threads/:threadId/replies/:replyId/like", (request, response)=> {
-   console.log(request.params)
-   body={"threadId":request.params.threadId, "replyId": request.params.replyId}
-   response.status(200).send(body)
-})
+app.delete("/threads/:threadId/replies/:replyId/like", async (request, response)=> {
+      let reply;
+      let thread;
+      let like;
+      try{
+         thread = await Thread.findById(request.params.threadId)
+         reply = await Reply.findById(request.params.replyId)
+      }catch(e){
+         response.status(400).send("Bad Request")
+      }
+      if(thread && reply){
+         like = await Like.deleteOne(request.params.likeId);
+         response.status(201).send("Like removed");
+   
+      }else{
+         response.status(404).send("Not found");
+   }
+});
+
+
+
 
 
 //curl -X POST http://localhost:3001/users -H 'Content-Type: application/json' -d "{\"username\":\"nisse\",\"password\":\"password\"}"
